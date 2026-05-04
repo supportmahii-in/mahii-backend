@@ -15,8 +15,8 @@ node scripts/create-admin.js
 
 After successful execution, you can login with:
 
-- **Email:** admin@mahii.com
-- **Password:** Admin@123456
+- **Email:** admin@mahii.dev
+- **Password:** NewAdmin@2026!
 
 ## Important Notes
 

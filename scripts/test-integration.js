@@ -161,8 +161,8 @@ const testData = async () => {
     console.log('│   Password: Test@123456                                  │');
     console.log('├────────────────────────────────────────────────────────│');
     console.log('│ ADMIN LOGIN (Create manually or use existing):          │');
-    console.log('│   Email: admin@mahii.com                            │');
-    console.log('│   Password: Admin@123456                                 │');
+    console.log('│   Email: admin@mahii.dev                            │');
+    console.log('│   Password: NewAdmin@2026!                                 │');
     console.log('└─────────────────────────────────────────────────────────┘');
 
     process.exit();

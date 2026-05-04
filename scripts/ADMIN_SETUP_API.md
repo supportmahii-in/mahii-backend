@@ -20,10 +20,10 @@ POST /api/auth/setup-admin
 
 ```json
 {
-  "secretKey": "mahii_admin_setup_secret_2024_secure_key",
+  "secretKey": "swaadsetu_admin_setup_secret_2026_newkey",
   "name": "Super Admin",
-  "email": "admin@mahii.com",
-  "password": "Admin@123456"
+  "email": "admin@mahii.dev",
+  "password": "NewAdmin@2026!"
 }
 ```
 
@@ -41,10 +41,10 @@ POST /api/auth/setup-admin
 curl -X POST http://localhost:5000/api/auth/setup-admin \
   -H "Content-Type: application/json" \
   -d '{
-    "secretKey": "mahii_admin_setup_secret_2024_secure_key",
+    "secretKey": "swaadsetu_admin_setup_secret_2026_newkey",
     "name": "Super Admin",
-    "email": "admin@mahii.com",
-    "password": "Admin@123456"
+    "email": "admin@mahii.dev",
+    "password": "NewAdmin@2026!"
   }'
 ```
 
@@ -57,10 +57,10 @@ fetch('http://localhost:5000/api/auth/setup-admin', {
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    secretKey: 'mahii_admin_setup_secret_2024_secure_key',
+    secretKey: 'swaadsetu_admin_setup_secret_2026_newkey',
     name: 'Super Admin',
-    email: 'admin@mahii.com',
-    password: 'Admin@123456'
+    email: 'admin@mahii.dev',
+    password: 'NewAdmin@2026!'
   })
 })
 .then(response => response.json())
@@ -78,7 +78,7 @@ fetch('http://localhost:5000/api/auth/setup-admin', {
   "admin": {
     "id": "...",
     "name": "Super Admin",
-    "email": "admin@mahii.com",
+    "email": "admin@mahii.dev",
     "role": "admin"
   }
 }

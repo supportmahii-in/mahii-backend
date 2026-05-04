@@ -26,6 +26,7 @@ const locationRoutes = require('./routes/locationRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 const chatRoutes = require('./routes/chatRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 // Connect to database
 connectDB();
@@ -100,6 +101,7 @@ app.get('/health', (req, res) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
 app.use('/api/shops', shopRoutes);
 app.use('/api/products', productRoutes);  // ADD THIS
 app.use('/api/orders', orderRoutes);      // ADD THIS

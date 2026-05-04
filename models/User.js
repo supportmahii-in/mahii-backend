@@ -30,6 +30,58 @@ const userSchema = new mongoose.Schema({
     default: 'customer',
   },
   profileImage: String,
+  bio: {
+    type: String,
+    default: '',
+  },
+  notificationSettings: {
+    emailNotifications: {
+      type: Boolean,
+      default: true,
+    },
+    pushNotifications: {
+      type: Boolean,
+      default: true,
+    },
+    orderUpdates: {
+      type: Boolean,
+      default: true,
+    },
+    promotionalEmails: {
+      type: Boolean,
+      default: false,
+    },
+    smsAlerts: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  privacySettings: {
+    showProfile: {
+      type: Boolean,
+      default: true,
+    },
+    showEmail: {
+      type: Boolean,
+      default: false,
+    },
+    showPhone: {
+      type: Boolean,
+      default: false,
+    },
+    showOrderHistory: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  language: {
+    type: String,
+    default: 'en',
+  },
+  currency: {
+    type: String,
+    default: 'INR',
+  },
   adminSessionId: {
     type: String,
     default: null,

@@ -28,17 +28,17 @@ const createAdmin = async () => {
     console.log('👤 Creating admin user...');
     const admin = await User.create({
       name: 'Super Admin',
-      email: 'admin@mahii.com',
+      email: 'admin@mahii.dev',
       phone: '9999999999',
-      password: 'Admin@123456',
+      password: 'NewAdmin@2026!',
       role: 'admin',
       isVerified: true,
       isApproved: true
     });
 
     console.log('✅ Admin created successfully!');
-    console.log('💫 Email: admin@mahii.com');
-    console.log('🔒 Password: Admin@123456');
+    console.log('💫 Email: admin@mahii.dev');
+    console.log('🔒 Password: NewAdmin@2026!');
     console.log('⚠️  Please change password after first login!');
 
     process.exit();

@@ -14,6 +14,10 @@ const {
   getRevenueReport,
   getSettings,
   generateAdminInvite,
+  getRevenueAnalytics,
+  getSalesAnalytics,
+  getUserAnalytics,
+  getOrderAnalytics,
 } = require('../controllers/adminController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
@@ -22,6 +26,10 @@ router.use(protect, authorize('admin', 'super_admin'));
 
 // Dashboard
 router.get('/dashboard', getDashboardStats);
+router.get('/analytics/revenue', getRevenueAnalytics);
+router.get('/analytics/users', getUserAnalytics);
+router.get('/analytics/orders', getOrderAnalytics);
+router.get('/analytics/sales', getSalesAnalytics);
 
 // User management
 router.get('/users', getAllUsers);

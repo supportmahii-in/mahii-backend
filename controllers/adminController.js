@@ -572,10 +572,170 @@ exports.getSettings = async (req, res) => {
         twitter: 'https://twitter.com/mahii',
       },
     };
-    
+
     res.status(200).json({
       success: true,
       settings,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message,
+    });
+  }
+};
+
+// @desc    Get revenue analytics data
+// @route   GET /api/admin/analytics/revenue
+// @access  Private (Admin only)
+exports.getRevenueAnalytics = async (req, res) => {
+  try {
+    const { period = 'month' } = req.query;
+
+    let start = new Date();
+    if (period === 'week') {
+      start.setDate(start.getDate() - 7);
+    } else if (period === 'month') {
+      start.setMonth(start.getMonth() - 1);
+    } else if (period === 'year') {
+      start.setFullYear(start.getFullYear() - 1);
+    }
+
+    const payments = await Payment.find({
+      status: 'success',
+      createdAt: { $gte: start },
+    });
+
+    // Group by month for chart data
+    const revenueByMonth = {};
+    payments.forEach(payment => {
+      const month = payment.createdAt.toLocaleString('default', { month: 'short' });
+      if (!revenueByMonth[month]) {
+        revenueByMonth[month] = 0;
+      }
+      revenueByMonth[month] += payment.amount;
+    });
+
+    const chartData = Object.keys(revenueByMonth).map(month => ({
+      name: month,
+      revenue: revenueByMonth[month],
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: chartData,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message,
+    });
+  }
+};
+
+// @desc    Get sales analytics data
+// @route   GET /api/admin/analytics/sales
+// @access  Private (Admin only)
+exports.getSalesAnalytics = async (req, res) => {
+  try {
+    const orders = await Order.find().populate('shopId', 'category');
+
+    // Group by category
+    const salesByCategory = {};
+    orders.forEach(order => {
+      const category = order.shopId?.category || 'Other';
+      if (!salesByCategory[category]) {
+        salesByCategory[category] = 0;
+      }
+      salesByCategory[category] += order.totalAmount;
+    });
+
+    const chartData = Object.keys(salesByCategory).map(category => ({
+      name: category,
+      value: salesByCategory[category],
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: chartData,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message,
+    });
+  }
+};
+
+// @desc    Get user analytics data
+// @route   GET /api/admin/analytics/users
+// @access  Private (Admin only)
+exports.getUserAnalytics = async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    const customers = await User.countDocuments({ role: 'customer' });
+    const shopOwners = await User.countDocuments({ role: 'shopowner' });
+    const admins = await User.countDocuments({ role: { $in: ['admin', 'super_admin'] } });
+
+    // Recent registrations (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const recentUsers = await User.countDocuments({
+      createdAt: { $gte: thirtyDaysAgo },
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalUsers,
+        customers,
+        shopOwners,
+        admins,
+        recentUsers,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message,
+    });
+  }
+};
+
+// @desc    Get order analytics data
+// @route   GET /api/admin/analytics/orders
+// @access  Private (Admin only)
+exports.getOrderAnalytics = async (req, res) => {
+  try {
+    const totalOrders = await Order.countDocuments();
+    const pendingOrders = await Order.countDocuments({ orderStatus: 'pending' });
+    const completedOrders = await Order.countDocuments({ orderStatus: 'delivered' });
+    const cancelledOrders = await Order.countDocuments({ orderStatus: 'cancelled' });
+
+    // Recent orders (last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const recentOrders = await Order.countDocuments({
+      createdAt: { $gte: sevenDaysAgo },
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalOrders,
+        pendingOrders,
+        completedOrders,
+        cancelledOrders,
+        recentOrders,
+      },
     });
   } catch (error) {
     console.error(error);
