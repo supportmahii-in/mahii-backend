@@ -8,6 +8,7 @@ const {
   markAttendance,
   getAttendanceHistory,
   cancelSubscription,
+  closeSubscriptionByOwner,
   getShopSubscriptions,
 } = require('../controllers/subscriptionController');
 const { protect, authorize } = require('../middleware/authMiddleware');
@@ -25,5 +26,6 @@ router.get('/my', protect, authorize('customer'), getMySubscriptions);
 router.post('/attendance', protect, authorize('customer'), markAttendance);
 router.get('/attendance/:subscriptionId', protect, getAttendanceHistory);
 router.put('/:id/cancel', protect, authorize('customer'), cancelSubscription);
+router.put('/:id/close', protect, authorize('shopowner'), closeSubscriptionByOwner);
 
 module.exports = router;

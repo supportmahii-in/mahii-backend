@@ -1,6 +1,7 @@
 const Subscription = require('../models/Subscription');
 const Shop = require('../models/Shop');
 const Payment = require('../models/Payment');
+const Notification = require('../models/Notification');
 const razorpay = require('../services/razorpayService');
 
 // @desc    Get available subscription plans for a mess
@@ -108,7 +109,7 @@ exports.createSubscription = async (req, res) => {
     // Create Razorpay Order for payment
     const razorpayOrder = await razorpay.createOrder(price, 'INR');
 
-    // Create subscription
+    // Create subscription (inactive until payment is verified)
     const subscription = await Subscription.create({
       userId: req.user.id,
       shopId,
@@ -121,7 +122,22 @@ exports.createSubscription = async (req, res) => {
       autoRenew: autoRenew || false,
       startDate: start,
       endDate,
+      isActive: false,
       razorpayOrderId: razorpayOrder.id,
+    });
+
+    // Notify shop owner of the new subscription request
+    await Notification.create({
+      userId: shop.ownerId,
+      title: 'New Mess Subscription Request',
+      message: `${req.user.name} has created a subscription request for ${shop.name}.`,
+      type: 'subscription',
+      priority: 'high',
+      data: {
+        subscriptionId: subscription._id,
+        shopId: shop._id,
+        customerId: req.user.id,
+      },
     });
 
     res.status(201).json({
@@ -191,6 +207,36 @@ exports.activateSubscription = async (req, res) => {
       razorpayOrderId,
       razorpayPaymentId: paymentId,
       razorpaySignature: signature,
+    });
+
+    const shop = await Shop.findById(subscription.shopId);
+    const shopOwnerId = shop?.ownerId;
+
+    if (shopOwnerId) {
+      await Notification.create({
+        userId: shopOwnerId,
+        title: 'Subscription Activated',
+        message: `Subscription for ${subscription.planName} on ${shop.name} is now active.`,
+        type: 'subscription',
+        priority: 'medium',
+        data: {
+          subscriptionId: subscription._id,
+          shopId: subscription.shopId,
+        },
+      });
+    }
+
+    // Notify customer of successful activation
+    await Notification.create({
+      userId: req.user.id,
+      title: 'Subscription Activated',
+      message: `Your ${subscription.planName} subscription is now active. Enjoy your meals!`,
+      type: 'subscription',
+      priority: 'medium',
+      data: {
+        subscriptionId: subscription._id,
+        shopId: subscription.shopId,
+      },
     });
 
     res.status(200).json({
@@ -397,6 +443,61 @@ exports.cancelSubscription = async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'Subscription cancelled successfully',
+      subscription,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message,
+    });
+  }
+};
+
+// @desc    Close an expired or completed subscription (Shop Owner)
+// @route   PUT /api/subscriptions/:id/close
+// @access  Private (Shop Owner only)
+exports.closeSubscriptionByOwner = async (req, res) => {
+  try {
+    const subscription = await Subscription.findById(req.params.id);
+    if (!subscription) {
+      return res.status(404).json({
+        success: false,
+        message: 'Subscription not found',
+      });
+    }
+
+    const shop = await Shop.findOne({ _id: subscription.shopId, ownerId: req.user.id });
+    if (!shop) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to close this subscription',
+      });
+    }
+
+    subscription.isActive = false;
+    subscription.autoRenew = false;
+    subscription.cancelledAt = new Date();
+    subscription.cancellationReason = req.body.reason || 'Closed by shop owner';
+
+    await subscription.save();
+
+    await Notification.create({
+      userId: subscription.userId,
+      title: 'Subscription Closed',
+      message: `Your subscription for ${shop.name} has been closed by the shop owner.`,
+      type: 'subscription',
+      priority: 'medium',
+      data: {
+        subscriptionId: subscription._id,
+        shopId: shop._id,
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Subscription closed successfully',
       subscription,
     });
   } catch (error) {

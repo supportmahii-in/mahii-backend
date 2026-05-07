@@ -1,5 +1,6 @@
 const Chat = require('../models/Chat');
 const User = require('../models/User');
+const Notification = require('../models/Notification');
 const crypto = require('crypto');
 
 const generateSessionId = () => {
@@ -18,6 +19,19 @@ exports.startChat = async (req, res) => {
       status: 'pending',
       lastMessageAt: new Date(),
     });
+
+    const admins = await User.find({ role: 'admin' });
+    await Promise.all(admins.map(admin => Notification.create({
+      userId: admin._id,
+      title: 'New Customer Chat Request',
+      message: `${name} started a new chat request.`,
+      type: 'system',
+      priority: 'high',
+      data: {
+        sessionId: chatSession.sessionId,
+        chatId: chatSession._id,
+      },
+    })));
 
     res.status(201).json({
       success: true,
@@ -79,6 +93,21 @@ exports.sendMessage = async (req, res) => {
           message: messageObj,
         });
       });
+    }
+
+    if (senderType !== 'admin') {
+      const admins = await User.find({ role: 'admin' });
+      await Promise.all(admins.map(admin => Notification.create({
+        userId: admin._id,
+        title: 'New Support Message',
+        message: `${chat.userInfo.name} sent a new support message.`,
+        type: 'system',
+        priority: 'high',
+        data: {
+          sessionId,
+          chatId: chat._id,
+        },
+      })));
     }
 
     res.status(200).json({

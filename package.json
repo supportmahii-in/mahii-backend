@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "setup:admin": "node scripts/create-admin.js"
+    "setup:admin": "node scripts/create-admin.js",
+    "seed:test-shops": "node scripts/seed-approved-test-shops.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
